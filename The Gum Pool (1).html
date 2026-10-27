@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Gum Pool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF5F1;          /* wrapper mint */
+  --surface:#FFFFFF;
+  --ink:#3A1F3D;         /* plum */
+  --ink-soft:#6E5872;
+  --gum:#F2A7C3;         /* bubblegum */
+  --gum-deep:#D9668F;
+  --gum-shine:#FBD9E6;
+  --line:#CFDCD5;
+  --flag:#F5D547;        /* yellow */
+  --ok:#2F7D5B;
+  --bad:#B3403F;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#22142A; --surface:#2E1C36; --ink:#F7E9F0; --ink-soft:#C3AABD;
+    --gum:#E98FB2; --gum-deep:#F2A7C3; --gum-shine:#F7C9DA; --line:#4A3352;
+    --flag:#E8C93E; --ok:#7FD0A9; --bad:#F08A88; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#22142A; --surface:#2E1C36; --ink:#F7E9F0; --ink-soft:#C3AABD;
+  --gum:#E98FB2; --gum-deep:#F2A7C3; --gum-shine:#F7C9DA; --line:#4A3352;
+  --flag:#E8C93E; --ok:#7FD0A9; --bad:#F08A88; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,.display{font-family:"Bricolage Grotesque","Arial Rounded MT Bold",system-ui,sans-serif}
+.wrap{max-width:68rem;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,15rem) 1fr;gap:2rem;align-items:center;padding:1rem 0 2rem}
+.blob{position:relative;width:100%;aspect-ratio:1.1}
+.blob svg{width:100%;height:100%;overflow:visible;transform-origin:50% 60%;transition:transform .6s cubic-bezier(.3,1.6,.5,1)}
+.blob .count{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none;color:#3A1F3D}
+.blob .count b{display:block;font:800 clamp(3.5rem,10vw,5.5rem)/.85 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.04em}
+.blob .count span{font:600 .95rem/1 "Bricolage Grotesque",system-ui,sans-serif}
+.hero h1{font-weight:800;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1;letter-spacing:-.03em;margin:0 0 .75rem;font-variation-settings:"opsz" 96}
+.hero p{margin:0 0 .6rem;max-width:36rem;font-size:1.1rem;color:var(--ink-soft)}
+.stakes{display:inline-block;margin-top:.4rem;background:var(--flag);color:#3A1F3D;padding:.35rem .8rem;border-radius:.4rem;font-weight:700;transform:rotate(-1.2deg)}
+.settled-banner{margin-top:.8rem;font-weight:700;color:var(--ok)}
+
+/* Layout */
+.grid{display:grid;grid-template-columns:minmax(0,22rem) minmax(0,1fr);gap:1.5rem;align-items:start}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:1.1rem;padding:1.3rem 1.3rem 1.4rem}
+.panel h2{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .25rem}
+.panel .sub{margin:0 0 1rem;color:var(--ink-soft);font-size:.95rem}
+
+/* Form */
+label.field{display:block;font-weight:700;margin:1rem 0 .35rem}
+input[type=date],input[type=text],select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:.6rem;padding:.6rem .7rem}
+input:focus-visible,select:focus-visible,button:focus-visible,.choice input:focus-visible+span{outline:3px solid var(--gum-deep);outline-offset:2px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.choice{position:relative}
+.choice input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.choice span{display:block;text-align:center;padding:.65rem .5rem;border:1.5px solid var(--line);border-radius:.6rem;background:var(--bg);font-weight:700;line-height:1.25;cursor:pointer}
+.choice input:checked+span{background:var(--gum);border-color:var(--gum-deep);color:#3A1F3D}
+.hint{font-size:.85rem;color:var(--ink-soft);margin:.35rem 0 0}
+button.primary{margin-top:1.3rem;width:100%;font:700 1.05rem/1 "Bricolage Grotesque",system-ui,sans-serif;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:.9rem 1rem;cursor:pointer}
+button.primary:disabled{opacity:.45;cursor:not-allowed}
+.status{min-height:1.4em;margin:.7rem 0 0;font-weight:700;font-size:.95rem}
+.status.ok{color:var(--ok)} .status.err{color:var(--bad)}
+
+/* Summary + strip */
+.summary{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin:0 0 1.1rem;color:var(--ink-soft)}
+.summary strong{color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.25rem}
+.split{display:flex;height:.7rem;border-radius:999px;overflow:hidden;background:var(--line);margin:.2rem 0 1.2rem}
+.split i{display:block;height:100%}
+.split .caught{background:var(--gum-deep)} .split .never{background:var(--ink-soft)}
+.strip-wrap{overflow-x:auto;margin:0 0 1.3rem}
+.strip{position:relative;height:3.6rem;min-width:28rem;margin:0 .6rem}
+.strip .axis{position:absolute;left:0;right:0;top:1.5rem;height:3px;background:var(--line);border-radius:2px}
+.strip .dot{position:absolute;top:1.05rem;width:.95rem;height:.95rem;margin-left:-.475rem;border-radius:50%;background:var(--gum);border:2px solid var(--gum-deep)}
+.strip .dot.out{background:var(--surface);border-color:var(--ink-soft);opacity:.7}
+.strip .today{position:absolute;top:.4rem;bottom:1.2rem;width:2px;background:var(--ink)}
+.strip .lbl{position:absolute;bottom:0;font-size:.75rem;color:var(--ink-soft);transform:translateX(-50%);white-space:nowrap}
+.strip .lbl.l{transform:none} .strip .lbl.r{transform:translateX(-100%)}
+
+/* Board */
+.board{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:2.2rem 1fr auto;gap:.2rem .8rem;align-items:center;padding:.8rem 0;border-top:1.5px dashed var(--line)}
+.row:first-child{border-top:0}
+.row .rank{font:800 1.2rem/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink-soft);text-align:center}
+.row .who{font-weight:700}
+.row .who .you{font-weight:400;color:var(--ink-soft)}
+.row .note{grid-column:2/4;font-size:.92rem;color:var(--ink-soft);font-style:italic;margin:0}
+.row .pick{text-align:right;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;line-height:1.2}
+.row .pick small{display:block;font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-weight:400;font-size:.8rem;color:var(--ink-soft)}
+.tag{display:inline-block;font-size:.78rem;font-weight:700;padding:.1rem .5rem;border-radius:999px;margin-left:.35rem;vertical-align:.1em;white-space:nowrap}
+.tag.caught{background:var(--gum);color:#3A1F3D}
+.tag.never{background:var(--line);color:var(--ink)}
+.tag.out{background:transparent;border:1.5px solid var(--ink-soft);color:var(--ink-soft)}
+.tag.win{background:var(--flag);color:#3A1F3D}
+.row.busted .who,.row.busted .pick{opacity:.55}
+.row.winner{background:color-mix(in srgb,var(--flag) 22%,transparent);border-radius:.7rem;padding-left:.4rem;padding-right:.4rem}
+.empty{padding:1.5rem 0 .5rem;color:var(--ink-soft)}
+
+/* Owner */
+details.owner{margin-top:1.5rem}
+details.owner summary{cursor:pointer;font-weight:700;padding:.3rem 0}
+.owner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:0 1rem}
+.check{display:flex;gap:.5rem;align-items:center;margin-top:1rem;font-weight:700}
+.notice{background:var(--surface);border:1.5px dashed var(--gum-deep);border-radius:.8rem;padding:.8rem 1rem;margin-bottom:1.5rem}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;justify-items:start;gap:1rem}
+  .blob{width:12rem}
+  .grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.blob svg{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="notice" class="notice" hidden></div>
+
+  <header class="hero">
+    <div class="blob" aria-hidden="true">
+      <svg id="gum" viewBox="0 0 160 140">
+        <path fill="var(--gum)" stroke="var(--gum-deep)" stroke-width="3" stroke-linejoin="round"
+          d="M58,18 C70,10 84,16 92,12 C112,4 136,18 140,40 C146,52 152,66 144,82 C140,100 124,118 102,120 C88,128 66,130 50,120 C30,114 14,100 14,80 C8,66 14,48 24,40 C32,26 44,22 58,18 Z"/>
+        <path fill="none" stroke="var(--gum-deep)" stroke-width="2.5" stroke-linecap="round" opacity=".55"
+          d="M40,52 q6,-5 12,0 M100,30 q7,-4 13,1 M122,96 q-6,5 -12,1 M34,96 q5,6 12,4"/>
+        <ellipse cx="54" cy="38" rx="14" ry="6" fill="var(--gum-shine)" transform="rotate(-24 54 38)"/>
+      </svg>
+      <div class="count"><div><b id="dayNum">7</b><span>days and counting</span></div></div>
+    </div>
+    <div>
+      <h1 id="title">The Gum Pool</h1>
+      <p id="lede">Someone left chewed gum in the conference booth, and it’s still there. Guess the day it finally disappears, and whether we ever find out who did it.</p>
+      <div id="stakes" class="stakes" hidden></div>
+      <div id="settled" class="settled-banner" hidden></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="betH">
+      <h2 id="betH">Place your bet</h2>
+      <p class="sub" id="betSub">One bet per person. You can change it while betting is open.</p>
+      <form id="betForm" novalidate>
+        <label class="field" for="date">The gum is gone on…</label>
+        <input id="date" type="date" required>
+        <p class="hint" id="dateHint"></p>
+
+        <fieldset style="border:0;padding:0;margin:0">
+          <legend class="field" style="font-weight:700;margin:1rem 0 .35rem;padding:0">Will we find out who did it?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="culprit" value="caught"><span>Yes, they’ll be caught</span></label>
+            <label class="choice"><input type="radio" name="culprit" value="never"><span>No, never</span></label>
+          </div>
+        </fieldset>
+
+        <label class="field" for="note">Your theory <span style="font-weight:400;color:var(--ink-soft)">(optional)</span></label>
+        <input id="note" type="text" maxlength="90" placeholder="Facilities is waiting for it to fossilise">
+
+        <button class="primary" id="submit" type="submit">Place bet</button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="boardH">
+      <h2 id="boardH">The board</h2>
+      <p class="sub" id="boardSub">Sorted by guess, earliest first. Greyed-out bets are ones the gum has already outlived.</p>
+      <div class="summary" id="summary"></div>
+      <div class="split" id="split" hidden></div>
+      <div class="strip-wrap"><div class="strip" id="strip" hidden></div></div>
+      <ol class="board" id="board"></ol>
+      <p class="empty" id="empty">No bets yet. Be the first to put a date on it.</p>
+    </section>
+  </div>
+
+  <details class="owner panel" id="owner" hidden>
+    <summary>Pool settings (only you can see this)</summary>
+    <form id="ownerForm" novalidate>
+      <div class="owner-grid">
+        <div><label class="field" for="oBooth">Which booth</label><input id="oBooth" type="text" maxlength="40" placeholder="the conference booth"></div>
+        <div><label class="field" for="oSpotted">Gum first spotted</label><input id="oSpotted" type="date"></div>
+        <div><label class="field" for="oStakes">What’s at stake</label><input id="oStakes" type="text" maxlength="80" placeholder="Winner gets a box of stroopwafels"></div>
+        <div><label class="field" for="oCleaned">Gum cleaned up on</label><input id="oCleaned" type="date"><p class="hint">Leave empty while it’s still there.</p></div>
+        <div><label class="field" for="oCulprit">The culprit</label>
+          <select id="oCulprit">
+            <option value="open">Still a mystery</option>
+            <option value="found">Found</option>
+            <option value="never">Case closed, never found</option>
+          </select></div>
+      </div>
+      <label class="check"><input id="oOpen" type="checkbox" checked> Betting is open</label>
+      <button class="primary" id="oSave" type="submit" style="max-width:16rem">Save settings</button>
+      <p class="status" id="oStatus" role="status" aria-live="polite"></p>
+    </form>
+  </details>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const DEFAULT_SPOTTED = "2026-10-22";
+let db = null, user = null, uid = null, isOwner = false, writeBlocked = false;
+let picks = [], pool = {}, names = {};
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function dn(s){ const [y,m,d] = s.split("-").map(Number); return Math.round(Date.UTC(y,m-1,d)/864e5); }
+function validDate(s){ return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+function fmt(s, withDay=true){
+  const [y,m,d] = s.split("-").map(Number);
+  return new Date(Date.UTC(y,m-1,d)).toLocaleDateString("en-GB",
+    withDay ? {weekday:"short",day:"numeric",month:"short",timeZone:"UTC"} : {day:"numeric",month:"short",timeZone:"UTC"});
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+
+function spotted(){ return validDate(pool.spottedOn) ? pool.spottedOn : DEFAULT_SPOTTED; }
+function cleaned(){ return validDate(pool.cleanedOn) ? pool.cleanedOn : null; }
+function bettingOpen(){ return pool.open !== false && !cleaned(); }
+
+function renderHero(){
+  const sp = spotted(), cl = cleaned();
+  const end = cl || todayStr();
+  const days = Math.max(0, dn(end) - dn(sp));
+  $("#dayNum").textContent = days;
+  $(".blob .count span").textContent = cl ? (days === 1 ? "day, then gone" : "days, then gone") : (days === 1 ? "day and counting" : "days and counting");
+  const grow = cl ? 1 : 1 + Math.min(days, 60) * 0.006;
+  $("#gum").style.transform = "scale(" + grow.toFixed(3) + ")";
+  const booth = (pool.booth || "").trim() || "the conference booth";
+  $("#lede").textContent = cl
+    ? "The gum in " + booth + " survived from " + fmt(sp,false) + " to " + fmt(cl,false) + ". Here’s how everyone did."
+    : "Someone left chewed gum in " + booth + " on " + fmt(sp,false) + ", and it’s still there. Guess the day it finally disappears, and whether we ever find out who did it.";
+  const st = $("#stakes");
+  if (pool.stakes && String(pool.stakes).trim()){ st.textContent = String(pool.stakes).trim(); st.hidden = false; } else st.hidden = true;
+  const sb = $("#settled");
+  const c = pool.culprit;
+  if (cl || c === "found" || c === "never"){
+    const parts = [];
+    if (cl) parts.push("Cleaned up " + fmt(cl) + ".");
+    if (c === "found") parts.push("The culprit has been found.");
+    if (c === "never") parts.push("The culprit was never found.");
+    sb.textContent = parts.join(" "); sb.hidden = false;
+  } else sb.hidden = true;
+}
+
+function rankedPicks(){
+  const cl = cleaned(), today = dn(todayStr());
+  const list = picks.filter(p => validDate(p.date)).map(p => ({...p, n: dn(p.date)}));
+  if (cl){
+    const target = dn(cl), c = pool.culprit;
+    list.forEach(p => {
+      p.off = Math.abs(p.n - target);
+      p.rightCall = (c === "found" && p.culprit === "caught") || (c === "never" && p.culprit === "never");
+    });
+    list.sort((a,b) => a.off - b.off || (b.rightCall - a.rightCall) || (a.placedAt||0) - (b.placedAt||0));
+  } else {
+    list.forEach(p => { p.busted = p.n < today; });
+    list.sort((a,b) => a.n - b.n || (a.placedAt||0) - (b.placedAt||0));
+  }
+  return list;
+}
+
+function renderBoard(){
+  const list = rankedPicks(), cl = cleaned(), sp = dn(spotted());
+  const board = $("#board"); board.replaceChildren();
+  $("#empty").hidden = list.length > 0;
+  $("#boardSub").textContent = cl
+    ? "Ranked by how close each guess landed. Ties go to whoever called the culprit right, then whoever bet first."
+    : "Sorted by guess, earliest first. Greyed-out bets are ones the gum has already outlived.";
+
+  // Summary
+  const sum = $("#summary"); sum.replaceChildren();
+  const split = $("#split"), strip = $("#strip");
+  if (list.length){
+    const caught = list.filter(p => p.culprit === "caught").length;
+    const never = list.filter(p => p.culprit === "never").length;
+    const alive = cl ? list.length : list.filter(p => !p.busted).length;
+    const sorted = list.map(p => p.n).sort((a,b)=>a-b);
+    const med = sorted[Math.floor((sorted.length-1)/2)];
+    const medDate = new Date(med*864e5).toISOString().slice(0,10);
+    const add = (big, small) => { const d = el("div"); d.append(el("strong", null, big), document.createTextNode(" " + small)); sum.append(d); };
+    add(String(list.length), list.length === 1 ? "bet" : "bets");
+    if (!cl) add(String(alive), "still in it");
+    add(fmt(medDate,false), "median guess");
+    const total = caught + never;
+    if (total){
+      add(Math.round(never/total*100) + "%", "say never caught");
+      split.replaceChildren();
+      const a = el("i","caught"); a.style.width = (caught/total*100) + "%"; a.title = caught + " say caught";
+      const b = el("i","never"); b.style.width = (never/total*100) + "%"; b.title = never + " say never";
+      split.append(a,b); split.hidden = false;
+      split.setAttribute("aria-label", caught + " say the culprit will be caught, " + never + " say never");
+      split.setAttribute("role","img");
+    } else split.hidden = true;
+
+    // Strip timeline
+    const today = dn(todayStr());
+    const endMark = cl ? dn(cl) : today;
+    const lo = sp, hi = Math.max(sorted[sorted.length-1], endMark) + 2;
+    const pos = n => ((n - lo) / (hi - lo) * 100).toFixed(2) + "%";
+    strip.replaceChildren(el("div","axis"));
+    list.forEach(p => {
+      const d = el("div", "dot" + (p.busted ? " out" : "")); d.style.left = pos(p.n);
+      d.title = (names[p.id] || "Someone") + ": " + fmt(p.date); strip.append(d);
+    });
+    const t = el("div","today"); t.style.left = pos(endMark); strip.append(t);
+    const l1 = el("div","lbl l","Spotted " + fmt(spotted(),false)); l1.style.left = "0"; strip.append(l1);
+    const l2 = el("div","lbl", (cl ? "Gone " : "Today ") + fmt(cl || todayStr(), false)); l2.style.left = pos(endMark);
+    if ((endMark - lo)/(hi - lo) > .8) l2.className = "lbl r";
+    if ((endMark - lo)/(hi - lo) > .25) strip.append(l2);
+    strip.hidden = false;
+    strip.setAttribute("role","img");
+    strip.setAttribute("aria-label","Timeline of guesses from the day the gum was spotted");
+  } else { split.hidden = true; strip.hidden = true; }
+
+  list.forEach((p, i) => {
+    const li = el("li","row");
+    if (p.busted) li.classList.add("busted");
+    if (cl && i === 0) li.classList.add("winner");
+    li.append(el("div","rank", cl ? String(i+1) : (p.busted ? "×" : "")));
+    const who = el("div","who", names[p.id] || "Someone");
+    if (p.id === uid) who.append(el("span","you"," (you)"));
+    const tag = el("span","tag " + (p.culprit === "caught" ? "caught" : "never"), p.culprit === "caught" ? "will be caught" : "never caught");
+    who.append(tag);
+    if (cl && i === 0) who.append(el("span","tag win","winner"));
+    if (cl && p.rightCall) who.append(el("span","tag win","called it"));
+    if (p.busted) who.append(el("span","tag out","outlived"));
+    li.append(who);
+    const pick = el("div","pick", fmt(p.date));
+    const dayN = p.n - sp;
+    pick.append(el("small", null, cl ? (p.off === 0 ? "spot on" : p.off + (p.off === 1 ? " day off" : " days off")) : "day " + dayN));
+    li.append(pick);
+    if (p.note && String(p.note).trim()) li.append(el("p","note","“" + String(p.note).trim().slice(0,90) + "”"));
+    board.append(li);
+  });
+}
+
+function renderForm(){
+  const mine = picks.find(p => p.id === uid);
+  const open = bettingOpen();
+  const can = !!db && !!uid && !writeBlocked && open;
+  const dateI = $("#date");
+  dateI.min = todayStr();
+  ["#date","#note","#submit"].forEach(s => $(s).disabled = !can);
+  document.querySelectorAll('input[name=culprit]').forEach(r => r.disabled = !can);
+  $("#submit").textContent = mine ? "Update bet" : "Place bet";
+  if (!open) $("#betSub").textContent = cleaned() ? "The gum is gone, so betting is over." : "Betting is closed.";
+  else if (writeBlocked) $("#betSub").textContent = "You can view the board but not bet. Ask the pool owner to give you Contributor access.";
+  else if (!db || !uid) $("#betSub").textContent = "Open this page in Claude while signed in to place a bet.";
+  else $("#betSub").textContent = "One bet per person. You can change it while betting is open.";
+  const sp = spotted();
+  const v = dateI.value;
+  $("#dateHint").textContent = validDate(v) ? "That’s day " + (dn(v) - dn(sp)) + " of the gum." : "";
+}
+
+function fillFormFromMine(){
+  const mine = picks.find(p => p.id === uid);
+  if (!mine || fillFormFromMine.done) return;
+  fillFormFromMine.done = true;
+  if (validDate(mine.date)) $("#date").value = mine.date;
+  const r = document.querySelector('input[name=culprit][value="' + (mine.culprit === "caught" ? "caught" : "never") + '"]');
+  if (r) r.checked = true;
+  $("#note").value = mine.note || "";
+}
+
+function renderOwner(){
+  $("#owner").hidden = !(db && isOwner);
+  if (!isOwner || renderOwner.filled || !renderOwner.loaded) return;
+  renderOwner.filled = true;
+  $("#oBooth").value = pool.booth || "";
+  $("#oSpotted").value = spotted();
+  $("#oStakes").value = pool.stakes || "";
+  $("#oCleaned").value = cleaned() || "";
+  $("#oCulprit").value = ["found","never"].includes(pool.culprit) ? pool.culprit : "open";
+  $("#oOpen").checked = pool.open !== false;
+}
+
+function render(){ renderHero(); renderBoard(); renderForm(); renderOwner(); }
+
+$("#date").addEventListener("input", renderForm);
+
+$("#betForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const st = $("#status"); st.className = "status"; st.textContent = "";
+  const date = $("#date").value;
+  const culprit = (document.querySelector('input[name=culprit]:checked') || {}).value;
+  if (!validDate(date)){ st.className = "status err"; st.textContent = "Pick the date you think the gum disappears."; return; }
+  if (dn(date) < dn(todayStr())){ st.className = "status err"; st.textContent = "Pick today or a later date. The gum is still there."; return; }
+  if (!culprit){ st.className = "status err"; st.textContent = "Say whether you think the culprit will be found."; return; }
+  const mine = picks.find(p => p.id === uid);
+  const body = { date, culprit, note: $("#note").value.trim().slice(0,90), placedAt: mine && mine.placedAt ? mine.placedAt : Date.now(), updatedAt: Date.now() };
+  $("#submit").disabled = true;
+  try {
+    await db.collection("picks").doc(uid).set(body);
+    st.className = "status ok"; st.textContent = mine ? "Bet updated." : "Bet placed.";
+  } catch(err){
+    st.className = "status err";
+    if (err && err.code === "invalid_argument"){ writeBlocked = true; st.textContent = "Your access is view-only, so the bet wasn’t saved."; }
+    else st.textContent = "The bet didn’t save. Try again in a moment.";
+  }
+  renderForm();
+});
+
+$("#ownerForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const st = $("#oStatus"); st.className = "status"; st.textContent = "";
+  const spottedOn = $("#oSpotted").value, cleanedOn = $("#oCleaned").value;
+  if (!validDate(spottedOn)){ st.className = "status err"; st.textContent = "Set the date the gum was first spotted."; return; }
+  if (cleanedOn && dn(cleanedOn) < dn(spottedOn)){ st.className = "status err"; st.textContent = "The cleanup date can’t be before the gum was spotted."; return; }
+  const body = { booth: $("#oBooth").value.trim().slice(0,40), spottedOn, stakes: $("#oStakes").value.trim().slice(0,80),
+    cleanedOn: cleanedOn || null, culprit: $("#oCulprit").value, open: $("#oOpen").checked };
+  $("#oSave").disabled = true;
+  try { await db.doc("pool/result").set(body); st.className = "status ok"; st.textContent = "Settings saved."; }
+  catch(err){ st.className = "status err"; st.textContent = "Settings didn’t save. Try again in a moment."; }
+  $("#oSave").disabled = false;
+});
+
+async function resolveNames(){
+  if (!user) return;
+  const ids = picks.map(p => p.id).filter(id => !(id in names));
+  if (!ids.length) return;
+  try {
+    const ps = await user.profiles(ids);
+    ids.forEach(id => { names[id] = (ps[id] && ps[id].name) || "Someone"; });
+  } catch(_){}
+}
+
+function offline(msg){
+  const n = $("#notice"); n.textContent = msg; n.hidden = false; render();
+}
+
+render();
+(async () => {
+  const c = window.claude;
+  if (!c || typeof c.use !== "function"){ offline("Open this page from its Claude link to see the board and place a bet."); return; }
+  try { [db, user] = await Promise.all([c.use("db"), c.use("user")]); } catch(_) {}
+  if (!db){ offline("Sign in to Claude to see the board and place a bet."); return; }
+  if (user){
+    try { uid = await user.id(); } catch(_){}
+    try { isOwner = await user.isOwner(); } catch(_){}
+    try { if (await user.can("data.write") === false && !isOwner){ /* still may write own picks; let the write decide */ } } catch(_){}
+  }
+  db.doc("pool/result").onSnapshot(s => { pool = s.exists ? (s.data() || {}) : {}; renderOwner.loaded = true; render(); },
+    () => offline("The pool settings couldn’t load. Reload the page."));
+  db.collection("picks").onSnapshot(async s => {
+    picks = s.docs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
+    await resolveNames(); fillFormFromMine(); render();
+  }, () => offline("The board couldn’t load. Reload the page."));
+})();
+</script>
+</body>
+</html>
